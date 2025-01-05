@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['B2']
+
+roboflow:
+  workspace: 00proj-uynu2
+  project: b2-3qvps
+  version: 1
+  license: Public Domain
+  url: https://universe.roboflow.com/00proj-uynu2/b2-3qvps/dataset/1
