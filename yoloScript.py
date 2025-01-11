@@ -5,7 +5,7 @@ import os
 
 # Define paths
 dataset_path = "datasets/data.yaml"
-model_path = "trainedModel/best.pt"
+model_path = "trainedModel/train5/weights/best.pt"
 image_path = "datasets/test/images/"
 onnx_path = "result.onnx"
 
@@ -21,7 +21,7 @@ def load_images_from_dir(dir):
 def train():
     try:
         model = YOLO("yolo11n.pt")  # Load a pretrained YOLO model (recommended for training)
-        results = model.train(data=dataset_path, epochs=50, imgsz=640, batch=16)
+        results = model.train(data=dataset_path, epochs=250, imgsz=640, batch=64)
         results.save(model_path)
         print("Training completed and model saved.")
     except Exception as e:
@@ -53,6 +53,7 @@ def convert_to_onnx():
         dummy_input = torch.randn(1, 3, 640, 640)  # Adjust the input size as per your model requirements
         torch.onnx.export(model.model, dummy_input, onnx_path, opset_version=11,
                           input_names=["input"], output_names=["output"])
+        # model.export(format="onnx")
         print(f"Model has been converted to ONNX and saved at {onnx_path}")
     except Exception as e:
         print(f"Error during ONNX conversion: {e}")
