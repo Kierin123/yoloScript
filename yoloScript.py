@@ -5,7 +5,8 @@ import os
 
 # Define paths
 dataset_path = "datasets/data.yaml"
-model_path = "trainedModel/train5/weights/best.pt"
+trained_model_path = "runs/"
+model_path = "trainedModel/bestModel/weights/best.pt"
 image_path = "datasets/test/images/"
 onnx_path = "result.onnx"
 
@@ -17,17 +18,30 @@ def load_images_from_dir(dir):
             images.append(img)
     return images
 
-# Train
+"""
+train()
+
+Function to perform training of pretrained model of yolo11. 
+Function uses yolo11s.pt model - model to get better result but loose 
+time performance. 
+epochs = 250
+optimizer = auto / AdamW
+batch = 32
+"""
 def train():
     try:
-        model = YOLO("yolo11n.pt")  # Load a pretrained YOLO model (recommended for training)
-        results = model.train(data=dataset_path, epochs=250, imgsz=640, batch=64)
-        results.save(model_path)
+        model = YOLO("yolo11s.pt")  # Load a pretrained YOLO model (recommended for training)
+        results = model.train(data=dataset_path, epochs=250, imgsz=640, batch=32, patience=50)
+        results.save(trained_model_path)
         print("Training completed and model saved.")
     except Exception as e:
         print(f"Error during training: {e}")
 
-# Validate
+"""
+validate()
+
+Function to perform validation of trained model of yolo11. 
+"""
 def validate():
     try:
         model = YOLO(model_path)  # Load the trained model
@@ -37,16 +51,24 @@ def validate():
         print(f"Error during validation: {e}")
 
 
-# Predict
+"""
+predict()
+
+Function to perform prediction signs from provides photos in "datasets/test/images/"
+"""
 def predict():
     try:
         model = YOLO(model_path)  # Load the trained model
         img = load_images_from_dir(image_path)
-        model.predict(img, show=True, save=True, imgsz=320, conf=0.3)
+        model.predict(img, show=True, save=True, imgsz=320, conf=0.6)
     except Exception as e:
         print(f"Error during prediction: {e}")
 
-# Convert to ONNX
+"""
+convert_to_onnx()
+
+Function to create result.onnx file.
+"""
 def convert_to_onnx():
     try:
         model = YOLO(model_path)  # Load the trained model
