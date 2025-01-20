@@ -4,18 +4,33 @@ import torch
 import os
 
 # Define paths
-dataset_path = "datasets/data.yaml"
+dataset_path = "./datasets/data.yaml"
 trained_model_path = "runs/"
-model_path = "trainedModel/bestModel/weights/best.pt"
+model_path = "trained/best.pt"
 image_path = "datasets/test/images/"
 onnx_path = "result.onnx"
 
+import os
+import cv2
+
+
 def load_images_from_dir(dir):
     images = []
+    supported_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.tiff')
+
+    if not os.path.isdir(dir):
+        return images
+
     for filename in os.listdir(dir):
-        img = cv2.imread(os.path.join(dir, filename))
-        if img is not None:
-            images.append(img)
+        if filename.lower().endswith(supported_extensions):
+            img = cv2.imread(os.path.join(dir, filename))
+            if img is not None:
+                images.append(img)
+            else:
+                print(f"Could not read the image {filename}.")
+        else:
+            print(f"Unsupported file format: {filename}")
+
     return images
 
 """
@@ -31,7 +46,8 @@ batch = 32
 def train():
     try:
         model = YOLO("yolo11s.pt")  # Load a pretrained YOLO model (recommended for training)
-        results = model.train(data=dataset_path, epochs=250, imgsz=640, batch=32, patience=50)
+        model.info()
+        results = model.train(data=dataset_path, epochs=250, imgsz=640, batch=32, patience=50,  device='cpu')
         results.save(trained_model_path)
         print("Training completed and model saved.")
     except Exception as e:
@@ -60,7 +76,8 @@ def predict():
     try:
         model = YOLO(model_path)  # Load the trained model
         img = load_images_from_dir(image_path)
-        model.predict(img, show=True, save=True, imgsz=320, conf=0.6)
+        print(len(img))
+        model.predict(img, save=True, conf=0.75)
     except Exception as e:
         print(f"Error during prediction: {e}")
 
@@ -83,6 +100,7 @@ def convert_to_onnx():
 
 # Main function with a control menu
 def main():
+    print('Current location: ' + os.getcwd())
     while True:
         print("\nYOLOv11 Control Menu:")
         print("1. Train")
